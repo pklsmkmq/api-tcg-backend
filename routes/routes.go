@@ -50,6 +50,8 @@ func SetupRoutes(r *gin.Engine) {
 
 		// Hanya Admin
 		pokemon.POST("/sets/sync", middleware.AdminOnly(), controllers.SyncSets)
+
+		pokemon.GET("/my-cards", controllers.GetMyCards)
 	}
 
 	// 4. ENDPOINT USERS (Baru)
@@ -57,5 +59,13 @@ func SetupRoutes(r *gin.Engine) {
 	users.Use(middleware.AuthMiddleware()) // Wajib pakai token
 	{
 		users.POST("/topup", controllers.TopupSaldo)
+		users.GET("/transactions", controllers.GetTransactions)
+	}
+
+	store := r.Group("/api/store")
+	store.Use(middleware.AuthMiddleware()) // Wajib pakai token JWT
+	{
+		// Endpoint untuk membeli pack
+		store.POST("/buy-pack", controllers.BuyPack)
 	}
 }
