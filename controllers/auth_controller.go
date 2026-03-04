@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"go-supabase-api/config"
@@ -39,6 +38,7 @@ func Register(c *gin.Context) {
 		"email":         req.Email,
 		"password_hash": string(hash),
 		"saldo_uang":    10000,
+		"role":          "user",
 	})
 
 	if err != nil {
@@ -99,23 +99,20 @@ func Login(c *gin.Context) {
 			"username": user.Username,
 			"email":    user.Email,
 			"saldo":    user.SaldoUang,
+			"role":     user.Role,
 		},
 	})
 }
 
 func generateJWT(user models.User) (string, error) {
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		secret = "your-secret-key" // fallback, should use env variable
-	}
-
 	claims := jwt.MapClaims{
 		"id":       user.ID,
 		"email":    user.Email,
 		"username": user.Username,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(), // 24 hours expiration
+		"role":     user.Role,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
+	return token.SignedString(config.JWT_SECRET)
 }
